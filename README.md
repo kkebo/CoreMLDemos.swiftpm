@@ -5,7 +5,7 @@
 ![Platform](https://img.shields.io/badge/platform-ipados%20%7C%20ios-lightgrey.svg)
 [![License](https://img.shields.io/github/license/kkk669/CoreMLDemos.swiftpm.svg)](LICENSE.txt)
 
-Core ML Demos is an experimental Core ML app. It visualizes the inference results of ML models, as well as to benchmark them.
+Core ML Demos is an experimental Core ML app. It visualizes the inference results of ML models and can be used to benchmark ML models and inference backends.
 
 Demos currently implemented:
 

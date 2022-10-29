@@ -28,7 +28,7 @@ extension ContentView: View {
     var body: some View {
         NavigationSplitView {
             List(Demo.allCases, selection: self.$item) {
-                NavigationLink(LocalizedStringKey($0.description), value: $0)
+                Text(LocalizedStringKey($0.description))
             }
             .navigationTitle("Core ML Demos")
         } detail: {

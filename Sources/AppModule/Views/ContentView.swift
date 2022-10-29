@@ -33,7 +33,7 @@ extension ContentView: View {
             .navigationTitle("Core ML Demos")
         } detail: {
             switch self.item {
-            case .imageClassification: EmptyView()
+            case .imageClassification: Text("Not implemented.")
             case .objectDetection: ObjectDetectionView()
             case .none: Text("Choose an item from the sidebar.")
             }

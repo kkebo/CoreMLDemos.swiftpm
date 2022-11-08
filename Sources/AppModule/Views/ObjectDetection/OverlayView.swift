@@ -23,8 +23,8 @@ extension OverlayView: View {
                     Int(scaledWidth),
                     Int(scaledHeight)
                 )
-                    .applying(.init(scaleX: 1, y: -1).translatedBy(x: 0, y: -scaledHeight))
-                    .offsetBy(dx: -cropLeft, dy: -cropTop)
+                .applying(.init(scaleX: 1, y: -1).translatedBy(x: 0, y: -scaledHeight))
+                .offsetBy(dx: -cropLeft, dy: -cropTop)
                 context.stroke(Path(bbox), with: .color(.red), lineWidth: 1)
                 context.draw(
                     Text("\(cocoClasses[det.id]): \(det.confidence)")

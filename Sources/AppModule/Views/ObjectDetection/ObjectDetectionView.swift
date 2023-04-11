@@ -17,8 +17,8 @@ extension ObjectDetectionView: View {
             .ignoresSafeArea()
             FPSView(
                 cameraFPS: Double(self.state.configuration.videoFormat.framesPerSecond),
-                inferenceFPS: self.state.frameData?.fps ?? 0,
-                renderingFPS: 0
+                inferenceTime: self.state.frameData?.inferenceTime ?? .zero,
+                renderingTime: self.state.renderingTime ?? .zero
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
         }

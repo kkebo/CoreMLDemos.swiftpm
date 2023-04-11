@@ -12,12 +12,13 @@ struct Detection {
 
 struct FrameData {
     var detections: [Detection]
-    var fps: Double
+    var inferenceTime: Duration
 }
 
 @MainActor
 final class ObjectDetectionViewState: NSObject {
     @Published var frameData: FrameData?
+    @Published var renderingTime: Duration?
 
     // camera
     let session = ARSession()
@@ -73,7 +74,7 @@ final class ObjectDetectionViewState: NSObject {
 
     private func inference(
         imageBuffer: CVPixelBuffer
-    ) throws -> (result: MLFeatureProvider, duration: Double) {
+    ) throws -> (result: MLFeatureProvider, duration: Duration) {
         var cgImage: CGImage!
         VTCreateCGImageFromCVPixelBuffer(imageBuffer, options: nil, imageOut: &cgImage)
 
@@ -90,9 +91,9 @@ final class ObjectDetectionViewState: NSObject {
             ]
         )
 
-        let start = Date.now
+        let start = ContinuousClock.now
         let result = try self.model.prediction(from: input)
-        let duration = Date.now.timeIntervalSince(start)
+        let duration = start.duration(to: .now)
 
         return (result, duration)
     }
@@ -129,6 +130,6 @@ extension ObjectDetectionViewState: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
         let (result, duration) = try! self.inference(imageBuffer: frame.capturedImage)
         let detections = self.decodeResult(result)
-        self.frameData = .init(detections: detections, fps: 1 / duration)
+        self.frameData = .init(detections: detections, inferenceTime: duration)
     }
 }

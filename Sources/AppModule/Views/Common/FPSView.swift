@@ -2,8 +2,8 @@ import SwiftUI
 
 struct FPSView {
     let cameraFPS: Double
-    let inferenceFPS: Double
-    let renderingFPS: Double
+    let inferenceTime: Duration
+    let renderingTime: Duration
 }
 
 extension FPSView: View {
@@ -14,21 +14,15 @@ extension FPSView: View {
                 Text(
                     self.cameraFPS,
                     format: .number.precision(.fractionLength(2))
-                ) + Text("fps")
+                ) + Text(" ") + Text("fps")
             }
             HStack {
                 Text("inference") + Text(":")
-                Text(
-                    self.inferenceFPS,
-                    format: .number.precision(.fractionLength(2))
-                ) + Text("fps")
+                Text(self.inferenceTime, format: .units(allowed: [.milliseconds]))
             }
             HStack {
                 Text("rendering") + Text(":")
-                Text(
-                    self.renderingFPS,
-                    format: .number.precision(.fractionLength(2))
-                ) + Text("fps")
+                Text(self.renderingTime, format: .units(allowed: [.milliseconds]))
             }
         }
         .font(.body.monospacedDigit())
@@ -39,6 +33,6 @@ extension FPSView: View {
 
 struct FPSView_Previews: PreviewProvider {
     static var previews: some View {
-        FPSView(cameraFPS: 60, inferenceFPS: 60, renderingFPS: 60)
+        FPSView(cameraFPS: 60, inferenceTime: .zero, renderingTime: .zero)
     }
 }

@@ -102,8 +102,9 @@ final class ObjectDetectionViewState: NSObject {
         let coordinates = result.featureValue(for: "coordinates")!.multiArrayValue!
         let confidence = result.featureValue(for: "confidence")!.multiArrayValue!
         let numDet = coordinates.shape[0].intValue
+        let numCls = confidence.shape[1].intValue
 
-        let detections: [Detection] = (0..<numDet)
+        return (0..<numDet)
             .map { i in
                 let cx = coordinates[[i as NSNumber, 0]].doubleValue
                 let cy = coordinates[[i as NSNumber, 1]].doubleValue
@@ -111,16 +112,13 @@ final class ObjectDetectionViewState: NSObject {
                 let h = coordinates[[i as NSNumber, 3]].doubleValue
                 let bbox = CGRect(x: cx - w / 2, y: 1 - cy - h / 2, width: w, height: h)
 
-                let numCls = confidence.shape[1].uintValue
-                let featurePointer = UnsafePointer<Double>(
-                    OpaquePointer(confidence.dataPointer.advanced(by: i))
-                )
-                let (id, conf) = argmax(featurePointer, count: numCls)
+                let scores = confidence.dataPointer
+                    .advanced(by: i * numCls * MemoryLayout<Double>.stride)
+                    .bindMemory(to: Double.self, capacity: numCls)
+                let (id, score) = argmax(scores, count: numCls)
 
-                return Detection(id: id, confidence: conf, bbox: bbox)
+                return Detection(id: id, confidence: score, bbox: bbox)
             }
-
-        return detections
     }
 }
 

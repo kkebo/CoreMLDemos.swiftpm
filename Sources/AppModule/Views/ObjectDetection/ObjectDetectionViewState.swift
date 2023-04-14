@@ -46,18 +46,21 @@ final class ObjectDetectionViewState: NSObject {
     ]
 
     override init() {
-        self.model = try! MLModel(
-            contentsOf: MLModel.compileModel(
-                at: Bundle.main.url(
-                    forResource: "YOLOv3TinyInt8LUT",
-                    withExtension: "mlmodel"
-                )!
+        guard
+            let url = Bundle.main.url(
+                forResource: "YOLOv3TinyInt8LUT",
+                withExtension: "mlmodel"
             ),
-            configuration: self.modelConfiguration
-        )
-        self.imageConstraint = self.model.modelDescription
-            .inputDescriptionsByName[self.inputName]!
-            .imageConstraint!
+            let model = try? MLModel(
+                contentsOf: MLModel.compileModel(at: url),
+                configuration: self.modelConfiguration
+            ),
+            let imageConstraint = model.modelDescription
+                .inputDescriptionsByName[self.inputName]?
+                .imageConstraint
+        else { preconditionFailure() }
+        self.model = model
+        self.imageConstraint = imageConstraint
 
         super.init()
 
@@ -75,8 +78,9 @@ final class ObjectDetectionViewState: NSObject {
     private func inference(
         imageBuffer: CVPixelBuffer
     ) throws -> (result: MLFeatureProvider, duration: Duration) {
-        var cgImage: CGImage!
+        var cgImage: CGImage?
         VTCreateCGImageFromCVPixelBuffer(imageBuffer, options: nil, imageOut: &cgImage)
+        guard let cgImage else { preconditionFailure() }
 
         let featureValue = try MLFeatureValue(
             cgImage: cgImage,
@@ -99,8 +103,10 @@ final class ObjectDetectionViewState: NSObject {
     }
 
     private func decodeResult(_ result: MLFeatureProvider) -> [Detection] {
-        let coordinates = result.featureValue(for: "coordinates")!.multiArrayValue!
-        let confidence = result.featureValue(for: "confidence")!.multiArrayValue!
+        guard
+            let coordinates = result.featureValue(for: "coordinates")?.multiArrayValue,
+            let confidence = result.featureValue(for: "confidence")?.multiArrayValue
+        else { preconditionFailure() }
         let numDet = coordinates.shape[0].intValue
         let numCls = confidence.shape[1].intValue
 
@@ -126,7 +132,9 @@ extension ObjectDetectionViewState: ObservableObject {}
 
 extension ObjectDetectionViewState: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        let (result, duration) = try! self.inference(imageBuffer: frame.capturedImage)
+        guard let (result, duration) = try? self.inference(imageBuffer: frame.capturedImage) else {
+            preconditionFailure()
+        }
         let detections = self.decodeResult(result)
         self.frameData = .init(detections: detections, inferenceTime: duration)
     }

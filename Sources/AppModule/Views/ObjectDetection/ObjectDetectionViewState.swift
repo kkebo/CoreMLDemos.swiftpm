@@ -28,7 +28,7 @@ final class ObjectDetectionViewState: NSObject {
     }()
 
     // ML model
-    let model: MLModel
+    var model: MLModel?
     let modelConfiguration: MLModelConfiguration = {
         let config = MLModelConfiguration()
         config.computeUnits = .all
@@ -40,31 +40,35 @@ final class ObjectDetectionViewState: NSObject {
     let outputName = "coordinates"
     let iouThreshold = 0.5
     let confidenceThreshold = 0.3
-    let imageConstraint: MLImageConstraint
+    var imageConstraint: MLImageConstraint?
     let imageOptions: [MLFeatureValue.ImageOption: Any] = [
         .cropAndScale: VNImageCropAndScaleOption.scaleFill
     ]
 
     override init() {
+        super.init()
+        self.session.delegate = self
+    }
+
+    func loadModel() async throws {
         guard
             let url = Bundle.main.url(
                 forResource: "YOLOv3TinyInt8LUT",
                 withExtension: "mlmodel"
-            ),
-            let model = try? MLModel(
-                contentsOf: MLModel.compileModel(at: url),
-                configuration: self.modelConfiguration
-            ),
+            )
+        else { preconditionFailure() }
+        let compiledModelURL = try await MLModel.compileModel(at: url)
+        let model = try await MLModel.load(
+            contentsOf: compiledModelURL,
+            configuration: self.modelConfiguration
+        )
+        guard
             let imageConstraint = model.modelDescription
                 .inputDescriptionsByName[self.inputName]?
                 .imageConstraint
         else { preconditionFailure() }
         self.model = model
         self.imageConstraint = imageConstraint
-
-        super.init()
-
-        self.session.delegate = self
     }
 
     func startSession() {
@@ -76,6 +80,8 @@ final class ObjectDetectionViewState: NSObject {
     }
 
     private func inference(
+        model: MLModel,
+        imageConstraint: MLImageConstraint,
         imageBuffer: CVPixelBuffer
     ) throws -> (result: MLFeatureProvider, duration: Duration) {
         var cgImage: CGImage?
@@ -84,7 +90,7 @@ final class ObjectDetectionViewState: NSObject {
 
         let featureValue = try MLFeatureValue(
             cgImage: cgImage,
-            constraint: self.imageConstraint,
+            constraint: imageConstraint,
             options: self.imageOptions
         )
         let input = try MLDictionaryFeatureProvider(
@@ -96,7 +102,7 @@ final class ObjectDetectionViewState: NSObject {
         )
 
         let start = ContinuousClock.now
-        let result = try self.model.prediction(from: input)
+        let result = try model.prediction(from: input)
         let duration = start.duration(to: .now)
 
         return (result, duration)
@@ -132,9 +138,14 @@ extension ObjectDetectionViewState: ObservableObject {}
 
 extension ObjectDetectionViewState: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        guard let (result, duration) = try? self.inference(imageBuffer: frame.capturedImage) else {
-            preconditionFailure()
-        }
+        guard let model, let imageConstraint else { return }
+        guard
+            let (result, duration) = try? self.inference(
+                model: model,
+                imageConstraint: imageConstraint,
+                imageBuffer: frame.capturedImage
+            )
+        else { preconditionFailure() }
         let detections = self.decodeResult(result)
         self.frameData = .init(detections: detections, inferenceTime: duration)
     }

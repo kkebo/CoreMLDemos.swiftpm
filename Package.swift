@@ -8,7 +8,7 @@ import AppleProductTypes
 import PackageDescription
 
 let package = Package(
-    name: "Core ML Demos",
+    name: "CoreMLDemos.swiftpm",
     platforms: [
         .iOS("17.0")
     ],

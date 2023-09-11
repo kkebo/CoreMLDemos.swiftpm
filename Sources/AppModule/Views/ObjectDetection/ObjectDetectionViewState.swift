@@ -1,6 +1,6 @@
 import ARKit
-import Combine
 import CoreML
+import Observation
 import VideoToolbox
 import Vision
 
@@ -15,20 +15,13 @@ struct FrameData {
     var inferenceTime: Duration
 }
 
-@MainActor
+@Observable
 final class ObjectDetectionViewState: NSObject {
-    @Published var frameData: FrameData?
-    @Published var renderingTime: Duration?
-
-    // camera
-    let session = ARSession()
-    let configuration: AROrientationTrackingConfiguration = {
-        let configuration = AROrientationTrackingConfiguration()
-        return configuration
-    }()
+    var frameData: FrameData? = nil
+    var renderingTime: Duration? = nil
 
     // ML model
-    var model: MLModel?
+    var model: MLModel? = nil
     let modelConfiguration: MLModelConfiguration = {
         let config = MLModelConfiguration()
         config.computeUnits = .all
@@ -40,15 +33,12 @@ final class ObjectDetectionViewState: NSObject {
     let outputName = "coordinates"
     let iouThreshold = 0.5
     let confidenceThreshold = 0.3
-    var imageConstraint: MLImageConstraint?
+    var imageConstraint: MLImageConstraint? = nil
     let imageOptions: [MLFeatureValue.ImageOption: Any] = [
         .cropAndScale: VNImageCropAndScaleOption.scaleFill
     ]
 
-    override init() {
-        super.init()
-        self.session.delegate = self
-    }
+    var isLoading: Bool { self.model == nil }
 
     func loadModel() async throws {
         guard
@@ -69,14 +59,6 @@ final class ObjectDetectionViewState: NSObject {
         else { preconditionFailure() }
         self.model = model
         self.imageConstraint = imageConstraint
-    }
-
-    func startSession() {
-        self.session.run(self.configuration)
-    }
-
-    func stopSession() {
-        self.session.pause()
     }
 
     private func inference(
@@ -133,8 +115,6 @@ final class ObjectDetectionViewState: NSObject {
             }
     }
 }
-
-extension ObjectDetectionViewState: ObservableObject {}
 
 extension ObjectDetectionViewState: ARSessionDelegate {
     func session(_ session: ARSession, didUpdate frame: ARFrame) {

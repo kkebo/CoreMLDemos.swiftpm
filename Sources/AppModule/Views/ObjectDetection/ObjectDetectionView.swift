@@ -1,13 +1,30 @@
+import ARKit
 import SwiftUI
 
 struct ObjectDetectionView {
-    @StateObject private var state = ObjectDetectionViewState()
+    @State private var state = ObjectDetectionViewState()
+    @State private var session = ARSession()
+    private let configuration: AROrientationTrackingConfiguration = {
+        let configuration = AROrientationTrackingConfiguration()
+        return configuration
+    }()
+
+    private var imageResolution: CGSize { self.configuration.videoFormat.imageResolution }
+    private var cameraFPS: Double { Double(self.configuration.videoFormat.framesPerSecond) }
+
+    private func startSession() {
+        self.session.run(self.configuration)
+    }
+
+    private func stopSession() {
+        self.session.pause()
+    }
 }
 
 extension ObjectDetectionView: View {
     var body: some View {
         ZStack {
-            if self.state.model == nil {
+            if self.state.isLoading {
                 HStack(spacing: 5) {
                     ProgressView()
                     Text("Loading a model...")
@@ -17,28 +34,26 @@ extension ObjectDetectionView: View {
             }
         }
         .task {
+            self.session.delegate = self.state
             try? await self.state.loadModel()
         }
         .onAppear {
-            self.state.startSession()
+            self.startSession()
         }
         .onDisappear {
-            self.state.stopSession()
+            self.stopSession()
         }
     }
 
     private var realtimePreview: some View {
         ZStack {
-            ARViewContainer(session: self.state.session)
-            OverlayView(
-                frameData: self.state.frameData,
-                imageResolution: self.state.configuration.videoFormat.imageResolution
-            )
+            ARViewContainer(session: self.session)
+            OverlayView(frameData: self.state.frameData, imageResolution: self.imageResolution)
         }
         .ignoresSafeArea()
         .overlay(alignment: .bottomTrailing) {
             FPSView(
-                cameraFPS: Double(self.state.configuration.videoFormat.framesPerSecond),
+                cameraFPS: self.cameraFPS,
                 inferenceTime: self.state.frameData?.inferenceTime ?? .zero,
                 renderingTime: self.state.renderingTime ?? .zero
             )

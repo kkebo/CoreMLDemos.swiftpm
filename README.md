@@ -19,7 +19,7 @@ Demos currently implemented:
   
 ## Build requirements
 
-- Swift Playgrounds 4.4 or later (iPadOS 16.1 or later)
+- Swift Playgrounds 4.4 or later (iPadOS 17.0 or later)
 
 ## Get Started
 

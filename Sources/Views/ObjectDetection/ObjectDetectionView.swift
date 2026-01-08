@@ -9,7 +9,9 @@ struct ObjectDetectionView {
         return configuration
     }()
 
+    @inline(__always)
     private var imageResolution: CGSize { self.configuration.videoFormat.imageResolution }
+    @inline(__always)
     private var cameraFPS: Double { Double(self.configuration.videoFormat.framesPerSecond) }
 
     private func startSession() {

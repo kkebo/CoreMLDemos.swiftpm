@@ -31,8 +31,6 @@ extension FPSView: View {
     }
 }
 
-struct FPSView_Previews: PreviewProvider {
-    static var previews: some View {
-        FPSView(cameraFPS: 60, inferenceTime: .zero, renderingTime: .zero)
-    }
+#Preview {
+    FPSView(cameraFPS: 60, inferenceTime: .zero, renderingTime: .zero)
 }

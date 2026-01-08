@@ -61,8 +61,6 @@ extension ObjectDetectionView: View {
     }
 }
 
-struct ObjectDetectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        ObjectDetectionView()
-    }
+#Preview {
+    ObjectDetectionView()
 }

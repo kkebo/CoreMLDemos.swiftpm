@@ -21,8 +21,6 @@ struct ARViewContainer: UIViewRepresentable {
     }
 }
 
-struct ARViewContainer_Previews: PreviewProvider {
-    static var previews: some View {
-        ARViewContainer(session: ARSession())
-    }
+#Preview {
+    ARViewContainer(session: ARSession())
 }

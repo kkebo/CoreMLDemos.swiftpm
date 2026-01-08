@@ -37,8 +37,6 @@ extension OverlayView: View {
     }
 }
 
-struct OverlayView_Previews: PreviewProvider {
-    static var previews: some View {
-        OverlayView(frameData: nil, imageResolution: .zero)
-    }
+#Preview {
+    OverlayView(frameData: nil, imageResolution: .zero)
 }

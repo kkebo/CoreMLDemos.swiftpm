@@ -14,8 +14,8 @@ extension Demo: Identifiable {
 extension Demo: CustomStringConvertible {
     var description: String {
         switch self {
-        case .imageClassification: return "Image Classification"
-        case .objectDetection: return "Object Detection"
+        case .imageClassification: "Image Classification"
+        case .objectDetection: "Object Detection"
         }
     }
 }

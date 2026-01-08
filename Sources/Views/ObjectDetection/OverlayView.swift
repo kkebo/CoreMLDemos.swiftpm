@@ -9,8 +9,13 @@ extension OverlayView: View {
     var body: some View {
         Canvas { context, size in
             guard let frameData = self.frameData else { return }
-            let imageWidth = self.imageResolution.width
-            let imageHeight = self.imageResolution.height
+            let (imageWidth, imageHeight) =
+                switch frameData.orientation {
+                case .portrait, .portraitUpsideDown:
+                    (self.imageResolution.height, self.imageResolution.width)
+                case .landscapeLeft, .landscapeRight, _:
+                    (self.imageResolution.width, self.imageResolution.height)
+                }
             let scale = max(size.width / imageWidth, size.height / imageHeight)
             let scaledWidth = imageWidth * scale
             let scaledHeight = imageHeight * scale

@@ -36,6 +36,7 @@ final class ObjectDetectionViewState: NSObject {
     let iouThreshold = 0.5
     let confidenceThreshold = 0.3
 
+    @inline(__always)
     var isLoading: Bool { self.model == nil }
 
     override init() {

@@ -104,7 +104,7 @@ final class ObjectDetectionViewState: NSObject {
                 let cy = coordinates[[i as NSNumber, 1]].doubleValue
                 let w = coordinates[[i as NSNumber, 2]].doubleValue
                 let h = coordinates[[i as NSNumber, 3]].doubleValue
-                let bbox = CGRect(x: cx - w / 2, y: 1 - cy - h / 2, width: w, height: h)
+                let bbox = CGRect(x: cx - w / 2, y: cy - h / 2, width: w, height: h)
 
                 let scores = confidence.dataPointer
                     .advanced(by: i * numCls * MemoryLayout<Double>.stride)

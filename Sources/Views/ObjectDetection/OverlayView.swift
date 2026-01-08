@@ -1,5 +1,4 @@
 import SwiftUI
-import Vision
 
 struct OverlayView {
     let frameData: FrameData?
@@ -18,13 +17,10 @@ extension OverlayView: View {
             let cropLeft = scaledWidth > size.width ? (scaledWidth - size.width) / 2 : 0
             let cropTop = scaledHeight > size.height ? (scaledHeight - size.height) / 2 : 0
             for det in frameData.detections {
-                let bbox = VNImageRectForNormalizedRect(
-                    det.bbox,
-                    Int(scaledWidth),
-                    Int(scaledHeight)
+                let bbox = det.bbox.applying(
+                    .init(translationX: -cropLeft, y: -cropTop)
+                        .scaledBy(x: scaledWidth, y: scaledHeight)
                 )
-                .applying(.init(scaleX: 1, y: -1).translatedBy(x: 0, y: -scaledHeight))
-                .offsetBy(dx: -cropLeft, dy: -cropTop)
                 context.stroke(Path(bbox), with: .color(.red), lineWidth: 1)
                 context.draw(
                     Text("\(cocoClasses[det.id]): \(det.confidence)")

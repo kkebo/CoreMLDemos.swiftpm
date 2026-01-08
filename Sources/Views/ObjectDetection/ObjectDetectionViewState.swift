@@ -2,7 +2,6 @@ import ARKit
 import CoreML
 import Observation
 import VideoToolbox
-import Vision
 
 struct Detection {
     var id: Int

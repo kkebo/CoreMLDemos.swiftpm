@@ -39,7 +39,8 @@ let package = Package(
         .executableTarget(
             name: "AppModule",
             resources: [
-                .process("Resources")
+                .process("Resources/YOLOv3TinyInt8LUT.mlmodel"),
+                .copy("Resources/FastViTMA36F16.mlpackage"),
             ]
         )
     ]
